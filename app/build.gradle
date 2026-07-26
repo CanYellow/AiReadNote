@@ -1,0 +1,28 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.example.helloworld'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.helloworld"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    // 新增：统一 Java 编译版本为 17
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // 新增：统一 Kotlin 编译版本为 17
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
