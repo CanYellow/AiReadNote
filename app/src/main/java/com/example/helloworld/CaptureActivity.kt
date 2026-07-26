@@ -26,7 +26,8 @@ class CaptureActivity : Activity() {
 
         // 模拟笔记本列表数据（后续从数据库获取）
         val notebooks = arrayOf("默认笔记本", "《人类简史》笔记", "英语生词本")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, notebooks)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, notebooks)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerNotebook.adapter = adapter
 
         btnSend.setOnClickListener {
