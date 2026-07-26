@@ -3,12 +3,17 @@
     <application android:label="Hello WSL">
         <activity 
             android:name=".MainActivity" 
-            android:exported="true"
-            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity 
+            android:name=".CaptureActivity" 
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.Light.Dialog">
             <!-- 适配 ColorDict 协议 (Moon+ Reader) -->
             <intent-filter>
                 <action android:name="colordict.intent.action.SEARCH" />

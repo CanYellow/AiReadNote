@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@android:color/white">
+
+    <!-- 显示从阅读器传来的选中文本 -->
+    <TextView
+        android:id="@+id/text_selected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selected Text"
+        android:textSize="16sp"
+        android:textColor="@android:color/darker_gray"
+        android:maxLines="4"
+        android:ellipsize="end"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 在 EditText (edit_thought) 上方添加笔记本选择器 -->
+    <Spinner
+        android:id="@+id/spinner_notebook"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 用户输入感想的输入框 -->
+    <EditText
+        android:id="@+id/edit_thought"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入你的感想或笔记..."
+        android:minLines="3"
+        android:gravity="top|start"
+        android:inputType="textMultiLine"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 发送按钮 -->
+    <Button
+        android:id="@+id/btn_send"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="发送 (Send)" />
+
+</LinearLayout>
