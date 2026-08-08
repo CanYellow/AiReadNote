@@ -28,6 +28,11 @@ class NotebookManagerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notebook_manager)
         
+        val btnAdd = findViewById<android.widget.Button>(R.id.btn_add_notebook)
+        btnAdd.setOnClickListener {
+            showAddDialog()
+        }
+
         recyclerView = findViewById(R.id.recyclerViewNotebooks)
         recyclerView.layoutManager = LinearLayoutManager(this)
         
@@ -127,6 +132,43 @@ class NotebookManagerActivity : AppCompatActivity() {
                         if (newName != notebook.name) {
                             db.noteDao().updateNotebookName(notebook.name, newName)
                         }
+                    }
+                } else {
+                    Toast.makeText(this, "名称不能为空", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
+    private fun showAddDialog() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(50, 40, 50, 10)
+        }
+
+        val nameInput = EditText(this).apply { hint = "笔记本名称" }
+        val categoryInput = EditText(this).apply { hint = "分类" }
+        val promptInput = EditText(this).apply { hint = "系统提示词" }
+
+        layout.addView(nameInput)
+        layout.addView(categoryInput)
+        layout.addView(promptInput)
+
+        AlertDialog.Builder(this)
+            .setTitle("新建笔记本")
+            .setView(layout)
+            .setPositiveButton("保存") { _, _ ->
+                val name = nameInput.text.toString().trim()
+                val category = categoryInput.text.toString().trim()
+                val prompt = promptInput.text.toString().trim()
+
+                if (name.isNotEmpty()) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        val db = AppDatabase.getDatabase(this@NotebookManagerActivity)
+                        db.notebookDao().insert(
+                            Notebook(name = name, category = category, systemPrompt = prompt, lastUsed = System.currentTimeMillis())
+                        )
                     }
                 } else {
                     Toast.makeText(this, "名称不能为空", Toast.LENGTH_SHORT).show()

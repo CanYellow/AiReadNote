@@ -25,6 +25,14 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val btnAddNote = findViewById<Button>(R.id.btn_add_note)
+        btnAddNote.setOnClickListener {
+            val intent = Intent(this, CaptureActivity::class.java)
+            // 传递一个空文本，代表这是手动新建的笔记
+            intent.putExtra(Intent.EXTRA_PROCESS_TEXT, "") 
+            startActivity(intent)
+        }
+
         val btnManage = findViewById<Button>(R.id.btn_manage_notebooks)
         btnManage.setOnClickListener {
             startActivity(Intent(this, NotebookManagerActivity::class.java))
