@@ -32,4 +32,7 @@ interface NoteDao {
 
     @Query("UPDATE notes SET notebook = :newName WHERE notebook = :oldName")
     suspend fun updateNotebookName(oldName: String, newName: String)
+
+    @Query("DELETE FROM notes WHERE notebook = :notebookName")
+    suspend fun deleteNotesByNotebook(notebookName: String)
 }

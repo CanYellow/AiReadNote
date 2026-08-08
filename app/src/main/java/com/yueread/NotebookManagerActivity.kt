@@ -46,7 +46,7 @@ class NotebookManagerActivity : AppCompatActivity() {
                         lifecycleScope.launch(Dispatchers.IO) {
                             val db = AppDatabase.getDatabase(this@NotebookManagerActivity)
                             // 1. 删除该笔记本下的所有笔记
-                            db.noteDao().deleteNotesByNotebookId(notebook.id)
+                            db.noteDao().deleteNotesByNotebook(notebook.name)
                             // 2. 删除笔记本本身
                             db.notebookDao().delete(notebook)
                             
