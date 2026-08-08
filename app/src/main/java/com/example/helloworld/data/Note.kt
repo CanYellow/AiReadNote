@@ -9,5 +9,6 @@ data class Note(
     val selectedText: String,
     val thought: String,
     val notebook: String,
+    val aiResponse: String? = null,
     val timestamp: Long = System.currentTimeMillis()
 )

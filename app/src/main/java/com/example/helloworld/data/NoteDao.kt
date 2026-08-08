@@ -20,4 +20,7 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes ORDER BY timestamp DESC")
     fun getAllNotes(): Flow<List<Note>>
+
+    @Query("SELECT * FROM notes ORDER BY id DESC LIMIT 1")
+    suspend fun getLatestNote(): Note?
 }
