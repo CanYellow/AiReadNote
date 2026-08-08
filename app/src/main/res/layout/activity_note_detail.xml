@@ -8,5 +8,27 @@
     <EditText android:id="@+id/edit_thought" android:layout_width="match_parent" android:layout_height="wrap_content" android:minLines="3"/>
     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="AI 回复:" android:layout_marginTop="8dp"/>
     <EditText android:id="@+id/edit_ai_response" android:layout_width="match_parent" android:layout_height="wrap_content" android:minLines="2"/>
-    <Button android:id="@+id/btn_save_changes" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="保存修改" android:layout_marginTop="16dp"/>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+        
+        <Button
+            android:id="@+id/btn_save_changes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="保存修改"
+            android:layout_marginEnd="8dp"/>
+            
+        <Button
+            android:id="@+id/btn_ai_reply"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="AI 回答"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
 </LinearLayout>
