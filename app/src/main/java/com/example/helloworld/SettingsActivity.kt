@@ -1,7 +1,11 @@
 package com.example.helloworld
 
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -96,6 +100,31 @@ class SettingsActivity : ComponentActivity() {
 
         findViewById<Button>(R.id.btn_add_config).setOnClickListener {
             showAddConfigDialog(db)
+        }
+
+        // 新增：调试信息按钮逻辑
+        findViewById<Button>(R.id.btn_debug_info).setOnClickListener {
+            val packageInfo = packageManager.getPackageInfo(packageName, 0)
+            val debugInfo = """
+                App Version: ${packageInfo.versionName} (${packageInfo.versionCode})
+                OS Version: Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})
+                Device: ${Build.MANUFACTURER} ${Build.MODEL}
+                Brand: ${Build.BRAND}
+                Board: ${Build.BOARD}
+                Hardware: ${Build.HARDWARE}
+            """.trimIndent()
+
+            AlertDialog.Builder(this)
+                .setTitle("设备调试信息")
+                .setMessage(debugInfo)
+                .setPositiveButton("复制到剪贴板") { _, _ ->
+                    val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("Debug Info", debugInfo)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(this, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("关闭", null)
+                .show()
         }
 
         // 修改：绑定导出按钮事件，增加时间戳

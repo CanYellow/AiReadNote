@@ -5,6 +5,10 @@
     
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
         <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="AI 模型配置" android:textSize="24sp" android:textStyle="bold"/>
+        
+        <!-- 新增：调试信息按钮 -->
+        <Button android:id="@+id/btn_debug_info" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="调试信息" android:layout_marginEnd="8dp"/>
+        
         <Button android:id="@+id/btn_add_config" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="新增配置"/>
     </LinearLayout>
 
