@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Notebook(
     @PrimaryKey val name: String,
     val isActive: Boolean = true,
-    val lastUsed: Long = System.currentTimeMillis()
+    val lastUsed: Long = System.currentTimeMillis(),
+    val category: String = "默认分类"
 )

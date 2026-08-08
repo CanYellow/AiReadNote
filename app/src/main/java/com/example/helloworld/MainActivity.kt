@@ -37,7 +37,19 @@ class MainActivity : Activity() {
         
         val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = NoteAdapter(emptyList())
+        
+        // 更新了 NoteAdapter 的初始化以匹配新的构造函数
+        val adapter = NoteAdapter(
+            emptyList(),
+            onClick = { note ->
+                Toast.makeText(this, "点击了笔记: ${note.id}", Toast.LENGTH_SHORT).show()
+                // TODO: 跳转到详情页面
+            },
+            onLongClick = { note ->
+                Toast.makeText(this, "长按了笔记: ${note.id}", Toast.LENGTH_SHORT).show()
+                // TODO: 弹出删除或管理菜单
+            }
+        )
         recyclerView.adapter = adapter
 
         // 监听数据库中的笔记数据

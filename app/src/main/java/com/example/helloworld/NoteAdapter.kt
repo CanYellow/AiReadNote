@@ -7,7 +7,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworld.data.Note
 
-class NoteAdapter(private var notes: List<Note>) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
+class NoteAdapter(
+    private var notes: List<Note>,
+    private val onClick: (Note) -> Unit,
+    private val onLongClick: (Note) -> Unit
+) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
     class NoteViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvNotebook: TextView = view.findViewById(R.id.tv_notebook)
         val tvSelectedText: TextView = view.findViewById(R.id.tv_selected_text)
@@ -25,6 +29,12 @@ class NoteAdapter(private var notes: List<Note>) : RecyclerView.Adapter<NoteAdap
         holder.tvThought.text = "感想: ${note.thought}"
         holder.tvAiResponse.text = if (note.aiResponse != null) "AI: ${note.aiResponse}" else ""
         holder.tvAiResponse.visibility = if (note.aiResponse != null) View.VISIBLE else View.GONE
+
+        holder.itemView.setOnClickListener { onClick(note) }
+        holder.itemView.setOnLongClickListener {
+            onLongClick(note)
+            true
+        }
     }
     override fun getItemCount() = notes.size
     fun updateData(newNotes: List<Note>) {
