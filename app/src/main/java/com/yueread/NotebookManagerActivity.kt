@@ -17,7 +17,7 @@ class NotebookManagerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // setContentView(R.layout.activity_notebook_manager)
+        setContentView(R.layout.activity_notebook_manager)
         
         loadNotebooks()
     }
