@@ -37,6 +37,8 @@ abstract class AppDatabase : RoomDatabase() {
         private val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE `ai_configs` ADD COLUMN `systemPrompt` TEXT NOT NULL DEFAULT ''")
+                // 新增下面这行，为笔记本表也加上 systemPrompt
+                database.execSQL("ALTER TABLE `notebooks` ADD COLUMN `systemPrompt` TEXT NOT NULL DEFAULT ''")
             }
         }
 

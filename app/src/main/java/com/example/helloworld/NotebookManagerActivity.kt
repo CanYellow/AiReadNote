@@ -1,9 +1,12 @@
 package com.example.helloworld
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Switch
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -40,11 +43,51 @@ class NotebookManagerActivity : ComponentActivity() {
                                 db.notebookDao().update(nb.copy(isActive = isChecked))
                             }
                         }
+                        
+                        // 新增：点击整个条目弹出编辑框
+                        holder.itemView.setOnClickListener {
+                            showEditDialog(nb, db)
+                        }
                     }
                 }
             }
         }
     }
+
+    // 新增：编辑笔记本的弹窗方法
+    private fun showEditDialog(notebook: com.example.helloworld.data.Notebook, db: AppDatabase) {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 32, 32, 32)
+        }
+        val editCategory = EditText(this).apply { 
+            hint = "分类 (如: 默认分类)"
+            setText(notebook.category)
+        }
+        val editPrompt = EditText(this).apply { 
+            hint = "笔记本专属 AI 提示词 (可选)"
+            setText(notebook.systemPrompt)
+        }
+
+        layout.addView(editCategory)
+        layout.addView(editPrompt)
+
+        AlertDialog.Builder(this)
+            .setTitle("编辑笔记本: ${notebook.name}")
+            .setView(layout)
+            .setPositiveButton("保存") { _, _ ->
+                val updatedNb = notebook.copy(
+                    category = editCategory.text.toString(),
+                    systemPrompt = editPrompt.text.toString()
+                )
+                lifecycleScope.launch(Dispatchers.IO) {
+                    db.notebookDao().update(updatedNb)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
+
     class NbViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.tv_nb_name)
         val category: TextView = view.findViewById(R.id.tv_nb_category)

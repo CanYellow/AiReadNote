@@ -45,6 +45,11 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                        // 新增：点击整个条目弹出编辑框
+                        holder.itemView.setOnClickListener {
+                            showEditConfigDialog(config, db)
+                        }
                     }
                 }
             }
@@ -53,6 +58,49 @@ class SettingsActivity : ComponentActivity() {
         findViewById<Button>(R.id.btn_add_config).setOnClickListener {
             showAddConfigDialog(db)
         }
+    }
+
+    // 新增：编辑已有 AI 配置的弹窗方法
+    private fun showEditConfigDialog(config: AiConfig, db: AppDatabase) {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(32, 32, 32, 32)
+        }
+        val editName = EditText(this).apply { hint = "配置名称"; setText(config.name) }
+        val spinnerProtocol = Spinner(this).apply {
+            adapter = ArrayAdapter(this@SettingsActivity, android.R.layout.simple_spinner_dropdown_item, listOf("GEMINI", "OPENAI"))
+            setSelection(if (config.protocol == "OPENAI") 1 else 0)
+        }
+        val editBaseUrl = EditText(this).apply { hint = "Base URL"; setText(config.baseUrl) }
+        val editApiKey = EditText(this).apply { hint = "API Key"; setText(config.apiKey) }
+        val editModel = EditText(this).apply { hint = "模型名称"; setText(config.modelName) }
+        val editSystemPrompt = EditText(this).apply { hint = "系统提示词 (可选)"; setText(config.systemPrompt) }
+
+        layout.addView(editName)
+        layout.addView(spinnerProtocol)
+        layout.addView(editBaseUrl)
+        layout.addView(editApiKey)
+        layout.addView(editModel)
+        layout.addView(editSystemPrompt)
+
+        AlertDialog.Builder(this)
+            .setTitle("编辑 AI 配置")
+            .setView(layout)
+            .setPositiveButton("保存") { _, _ ->
+                val updatedConfig = config.copy(
+                    name = editName.text.toString(),
+                    protocol = spinnerProtocol.selectedItem.toString(),
+                    baseUrl = editBaseUrl.text.toString(),
+                    apiKey = editApiKey.text.toString(),
+                    modelName = editModel.text.toString(),
+                    systemPrompt = editSystemPrompt.text.toString()
+                )
+                lifecycleScope.launch(Dispatchers.IO) {
+                    db.aiConfigDao().update(updatedConfig)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showAddConfigDialog(db: AppDatabase) {
