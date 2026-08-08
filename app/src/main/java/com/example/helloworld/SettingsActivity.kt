@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworld.data.AiConfig
 import com.example.helloworld.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.FileInputStream
@@ -22,6 +23,9 @@ import java.io.FileOutputStream
 import kotlin.system.exitProcess
 
 class SettingsActivity : ComponentActivity() {
+
+    // 新增：记录当前是否为增量导入
+    private var isIncrementalImport = false
 
     // 新增：导出文件的启动器
     private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
@@ -81,8 +85,15 @@ class SettingsActivity : ComponentActivity() {
             exportLauncher.launch("notes_backup.db")
         }
 
+        // 修改：绑定导入按钮事件，弹出选择框
         findViewById<Button>(R.id.btn_import_data).setOnClickListener {
-            importLauncher.launch(arrayOf("*/*"))
+            AlertDialog.Builder(this)
+                .setTitle("选择导入方式")
+                .setItems(arrayOf("覆盖导入 (清空现有数据)", "增量导入 (合并到现有数据)")) { _, which ->
+                    isIncrementalImport = (which == 1)
+                    importLauncher.launch(arrayOf("*/*"))
+                }
+                .show()
         }
     }
 
@@ -111,21 +122,59 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    // 新增：导入数据库逻辑
+    // 修改：支持覆盖导入和增量导入
     private fun importDatabase(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val dbFile = getDatabasePath("notes_database")
-                contentResolver.openInputStream(uri)?.use { input ->
-                    FileOutputStream(dbFile).use { output ->
-                        input.copyTo(output)
+                if (!isIncrementalImport) {
+                    // 覆盖导入逻辑
+                    val dbFile = getDatabasePath("notes_database")
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(dbFile).use { output ->
+                            input.copyTo(output)
+                        }
                     }
-                }
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@SettingsActivity, "导入成功，应用即将退出以应用更改", Toast.LENGTH_LONG).show()
-                    // 延迟一下让用户看到提示，然后杀掉进程重启以重新加载数据库
-                    Thread.sleep(1500)
-                    exitProcess(0)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@SettingsActivity, "覆盖导入成功，即将重启应用", Toast.LENGTH_LONG).show()
+                        Thread.sleep(1500)
+                        exitProcess(0)
+                    }
+                } else {
+                    // 增量导入逻辑
+                    val tempDbFile = getDatabasePath("notes_database_temp")
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(tempDbFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    
+                    // 打开临时数据库
+                    val tempDb = androidx.room.Room.databaseBuilder(
+                        this@SettingsActivity,
+                        AppDatabase::class.java,
+                        "notes_database_temp"
+                    ).fallbackToDestructiveMigration().build()
+
+                    val mainDb = AppDatabase.getDatabase(this@SettingsActivity)
+
+                    // 1. 合并笔记本 (忽略已存在的同名笔记本)
+                    val notebooks = tempDb.notebookDao().getAllNotebooks().first()
+                    notebooks.forEach { mainDb.notebookDao().insert(it) }
+
+                    // 2. 合并笔记 (将 id 设为 0 以自动生成新 id，避免冲突)
+                    val notes = tempDb.noteDao().getAllNotes().first()
+                    notes.forEach { mainDb.noteDao().insert(it.copy(id = 0)) }
+
+                    // 3. 合并 AI 配置 (将 id 设为 0，并设为未激活，以免打乱当前配置)
+                    val configs = tempDb.aiConfigDao().getAllConfigs().first()
+                    configs.forEach { mainDb.aiConfigDao().insert(it.copy(id = 0, isActive = false)) }
+
+                    tempDb.close()
+                    tempDbFile.delete()
+
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@SettingsActivity, "增量导入成功！", Toast.LENGTH_SHORT).show()
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
