@@ -1,4 +1,4 @@
-package com.example.helloworld
+package com.example.yueread
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -13,7 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.helloworld.data.AppDatabase
+import com.example.yueread.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -55,7 +55,7 @@ class NotebookManagerActivity : ComponentActivity() {
     }
 
     // 新增：编辑笔记本的弹窗方法
-    private fun showEditDialog(notebook: com.example.helloworld.data.Notebook, db: AppDatabase) {
+    private fun showEditDialog(notebook: com.example.yueread.data.Notebook, db: AppDatabase) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)

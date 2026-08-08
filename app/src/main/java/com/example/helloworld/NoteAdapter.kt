@@ -1,11 +1,11 @@
-package com.example.helloworld
+package com.example.yueread
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.helloworld.data.Note
+import com.example.yueread.data.Note
 
 class NoteAdapter(
     private var notes: List<Note>,

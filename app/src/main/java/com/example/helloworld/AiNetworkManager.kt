@@ -1,6 +1,6 @@
-package com.example.helloworld
+package com.example.yueread
 
-import com.example.helloworld.data.AiConfig
+import com.example.yueread.data.AiConfig
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

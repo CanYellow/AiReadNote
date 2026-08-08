@@ -1,4 +1,4 @@
-package com.example.helloworld
+package com.example.yueread
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -12,7 +12,7 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.helloworld.data.AppDatabase
+import com.example.yueread.data.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
