@@ -20,6 +20,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlin.system.exitProcess
 
 class SettingsActivity : ComponentActivity() {
@@ -80,19 +83,29 @@ class SettingsActivity : ComponentActivity() {
             showAddConfigDialog(db)
         }
 
-        // 新增：绑定导入导出按钮事件
+        // 修改：绑定导出按钮事件，增加时间戳
         findViewById<Button>(R.id.btn_export_data).setOnClickListener {
-            exportLauncher.launch("notes_backup.db")
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val filename = "notes_backup_$timestamp.db"
+            exportLauncher.launch(filename)
         }
 
-        // 修改：绑定导入按钮事件，弹出选择框
+        // 修改：绑定导入按钮事件，增加风险提示弹窗
         findViewById<Button>(R.id.btn_import_data).setOnClickListener {
             AlertDialog.Builder(this)
-                .setTitle("选择导入方式")
-                .setItems(arrayOf("覆盖导入 (清空现有数据)", "增量导入 (合并到现有数据)")) { _, which ->
-                    isIncrementalImport = (which == 1)
-                    importLauncher.launch(arrayOf("*/*"))
+                .setTitle("风险提示")
+                .setMessage("导入数据可能会覆盖现有数据或产生冲突。强烈建议您在导入前先【导出备份】当前数据。\n\n您确定要继续导入吗？")
+                .setPositiveButton("继续导入") { _, _ ->
+                    // 用户确认后，再弹出导入方式选择框
+                    AlertDialog.Builder(this)
+                        .setTitle("选择导入方式")
+                        .setItems(arrayOf("覆盖导入 (清空现有数据)", "增量导入 (合并到现有数据)")) { _, which ->
+                            isIncrementalImport = (which == 1)
+                            importLauncher.launch(arrayOf("*/*"))
+                        }
+                        .show()
                 }
+                .setNegativeButton("取消并去备份", null)
                 .show()
         }
     }
