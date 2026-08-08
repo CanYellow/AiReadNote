@@ -1,12 +1,14 @@
 package com.example.helloworld
 
 import android.app.AlertDialog
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,8 +16,23 @@ import com.example.helloworld.data.AiConfig
 import com.example.helloworld.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import kotlin.system.exitProcess
 
 class SettingsActivity : ComponentActivity() {
+
+    // 新增：导出文件的启动器
+    private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        uri?.let { exportDatabase(it) }
+    }
+
+    // 新增：导入文件的启动器
+    private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let { importDatabase(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
@@ -57,6 +74,64 @@ class SettingsActivity : ComponentActivity() {
 
         findViewById<Button>(R.id.btn_add_config).setOnClickListener {
             showAddConfigDialog(db)
+        }
+
+        // 新增：绑定导入导出按钮事件
+        findViewById<Button>(R.id.btn_export_data).setOnClickListener {
+            exportLauncher.launch("notes_backup.db")
+        }
+
+        findViewById<Button>(R.id.btn_import_data).setOnClickListener {
+            importLauncher.launch(arrayOf("*/*"))
+        }
+    }
+
+    // 新增：导出数据库逻辑
+    private fun exportDatabase(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val db = AppDatabase.getDatabase(this@SettingsActivity)
+                // 强制将 WAL 日志写入主数据库文件，确保数据完整
+                db.openHelper.writableDatabase.query("PRAGMA wal_checkpoint(FULL)").close()
+                
+                val dbFile = getDatabasePath("notes_database")
+                contentResolver.openOutputStream(uri)?.use { output ->
+                    FileInputStream(dbFile).use { input ->
+                        input.copyTo(output)
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@SettingsActivity, "导出成功", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@SettingsActivity, "导出失败: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    // 新增：导入数据库逻辑
+    private fun importDatabase(uri: Uri) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val dbFile = getDatabasePath("notes_database")
+                contentResolver.openInputStream(uri)?.use { input ->
+                    FileOutputStream(dbFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@SettingsActivity, "导入成功，应用即将退出以应用更改", Toast.LENGTH_LONG).show()
+                    // 延迟一下让用户看到提示，然后杀掉进程重启以重新加载数据库
+                    Thread.sleep(1500)
+                    exitProcess(0)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@SettingsActivity, "导入失败: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 

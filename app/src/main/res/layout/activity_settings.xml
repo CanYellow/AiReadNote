@@ -8,6 +8,28 @@
         <Button android:id="@+id/btn_add_config" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="新增配置"/>
     </LinearLayout>
 
+    <!-- 新增：导入导出按钮组 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+        <Button
+            android:id="@+id/btn_export_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="导出备份"
+            android:layout_marginEnd="8dp"/>
+        <Button
+            android:id="@+id/btn_import_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="导入备份"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_ai_configs"
         android:layout_width="match_parent"
