@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Note::class, Notebook::class, AiConfig::class], version = 5, exportSchema = false)
+@Database(entities = [Note::class, Notebook::class, AiConfig::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
     abstract fun notebookDao(): NotebookDao
@@ -33,6 +33,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        // 定义从版本 5 到 6 的迁移逻辑（ai_configs 表新增 systemPrompt 字段）
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE `ai_configs` ADD COLUMN `systemPrompt` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -41,7 +48,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "notes_database"
                 )
                 // 移除 .fallbackToDestructiveMigration()，替换为添加迁移脚本
-                .addMigrations(MIGRATION_4_5)
+                .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
                 .build()
                 INSTANCE = instance
                 instance

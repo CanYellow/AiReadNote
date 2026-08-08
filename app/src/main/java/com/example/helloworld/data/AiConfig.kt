@@ -11,5 +11,6 @@ data class AiConfig(
     val baseUrl: String,
     val apiKey: String,
     val modelName: String,
-    val isActive: Boolean = false
+    val isActive: Boolean = false,
+    val systemPrompt: String = "" // 新增：AI 全局提示词
 )

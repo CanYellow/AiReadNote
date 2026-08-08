@@ -67,12 +67,14 @@ class SettingsActivity : ComponentActivity() {
         val editBaseUrl = EditText(this).apply { hint = "Base URL" }
         val editApiKey = EditText(this).apply { hint = "API Key" }
         val editModel = EditText(this).apply { hint = "模型名称 (如: gemini-1.5-pro)" }
+        val editSystemPrompt = EditText(this).apply { hint = "系统提示词 (可选)" }
 
         layout.addView(editName)
         layout.addView(spinnerProtocol)
         layout.addView(editBaseUrl)
         layout.addView(editApiKey)
         layout.addView(editModel)
+        layout.addView(editSystemPrompt)
 
         AlertDialog.Builder(this)
             .setTitle("新增 AI 配置")
@@ -83,7 +85,8 @@ class SettingsActivity : ComponentActivity() {
                     protocol = spinnerProtocol.selectedItem.toString(),
                     baseUrl = editBaseUrl.text.toString(),
                     apiKey = editApiKey.text.toString(),
-                    modelName = editModel.text.toString()
+                    modelName = editModel.text.toString(),
+                    systemPrompt = editSystemPrompt.text.toString()
                 )
                 lifecycleScope.launch(Dispatchers.IO) {
                     db.aiConfigDao().insert(newConfig)
