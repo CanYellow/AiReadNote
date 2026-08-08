@@ -2,8 +2,13 @@ package com.example.helloworld
 
 import android.app.Activity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import com.example.helloworld.data.AppDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +25,18 @@ class MainActivity : Activity() {
         if (noteIdToOpen != null) {
             Toast.makeText(this, "从通知跳转，准备打开笔记详情: $noteIdToOpen", Toast.LENGTH_LONG).show()
             // 后续这里会编写跳转到笔记详情页面的代码
+        }
+        
+        // 监听数据库中的笔记数据
+        CoroutineScope(Dispatchers.IO).launch {
+            val db = AppDatabase.getDatabase(applicationContext)
+            db.noteDao().getAllNotes().collect { notes ->
+                // 当数据库数据变化时，这里会收到最新的笔记列表
+                Log.d("MainActivity", "当前共有 ${notes.size} 条笔记")
+                notes.forEach { note ->
+                    Log.d("MainActivity", "笔记: ${note.thought} (来自: ${note.notebook})")
+                }
+            }
         }
     }
 }

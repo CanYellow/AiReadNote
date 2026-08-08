@@ -9,6 +9,12 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import com.example.helloworld.data.AppDatabase
+import com.example.helloworld.data.Note
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CaptureActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +40,21 @@ class CaptureActivity : Activity() {
             val thought = editThought.text.toString()
             val selectedNotebook = spinnerNotebook.selectedItem.toString()
             
-            Toast.makeText(this, "已保存至 [$selectedNotebook]: $thought", Toast.LENGTH_SHORT).show()
-            finish()
+            val newNote = Note(
+                selectedText = selectedText,
+                thought = thought,
+                notebook = selectedNotebook
+            )
+
+            CoroutineScope(Dispatchers.IO).launch {
+                val db = AppDatabase.getDatabase(applicationContext)
+                db.noteDao().insert(newNote)
+                
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@CaptureActivity, "已保存至 [$selectedNotebook]", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+            }
         }
     }
 
