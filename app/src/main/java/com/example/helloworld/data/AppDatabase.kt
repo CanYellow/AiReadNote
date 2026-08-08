@@ -49,8 +49,9 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "notes_database"
                 )
-                // 移除 .fallbackToDestructiveMigration()，替换为添加迁移脚本
                 .addMigrations(MIGRATION_4_5, MIGRATION_5_6)
+                // 新增：加回这行作为安全兜底，防止找不到迁移路径时直接闪退
+                .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
                 instance
