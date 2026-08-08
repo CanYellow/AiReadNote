@@ -18,7 +18,7 @@
         </activity>
 
         <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name="com.yueread.NotebookManagerActivity" android:exported="false" />
+        <activity android:name="com.yueread.NotebookManagerActivity" android:exported="false" android:theme="@style/Theme.AppCompat.Light" />
         <activity android:name=".NoteDetailActivity" android:exported="false" />
 
         <activity 
