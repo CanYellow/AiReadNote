@@ -110,13 +110,15 @@ class SettingsActivity : ComponentActivity() {
         }
     }
 
-    // 新增：导出数据库逻辑
+    // 修改：导出数据库逻辑
     private fun exportDatabase(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val db = AppDatabase.getDatabase(this@SettingsActivity)
-                // 强制将 WAL 日志写入主数据库文件，确保数据完整
-                db.openHelper.writableDatabase.query("PRAGMA wal_checkpoint(FULL)").close()
+                // 强制将 WAL 日志完全合并到主数据库文件中
+                db.query("PRAGMA wal_checkpoint(TRUNCATE)", null).use { cursor ->
+                    cursor.moveToFirst()
+                }
                 
                 val dbFile = getDatabasePath("notes_database")
                 contentResolver.openOutputStream(uri)?.use { output ->
@@ -141,12 +143,23 @@ class SettingsActivity : ComponentActivity() {
             try {
                 if (!isIncrementalImport) {
                     // 覆盖导入逻辑
+                    val db = AppDatabase.getDatabase(this@SettingsActivity)
+                    db.close() // 必须先关闭当前数据库连接
+                    
                     val dbFile = getDatabasePath("notes_database")
+                    val walFile = getDatabasePath("notes_database-wal")
+                    val shmFile = getDatabasePath("notes_database-shm")
+                    
                     contentResolver.openInputStream(uri)?.use { input ->
                         FileOutputStream(dbFile).use { output ->
                             input.copyTo(output)
                         }
                     }
+                    
+                    // 必须删除缓存文件，否则 SQLite 会用旧缓存覆盖刚导入的数据
+                    if (walFile.exists()) walFile.delete()
+                    if (shmFile.exists()) shmFile.delete()
+                    
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "覆盖导入成功，即将重启应用", Toast.LENGTH_LONG).show()
                         Thread.sleep(1500)
@@ -161,29 +174,31 @@ class SettingsActivity : ComponentActivity() {
                         }
                     }
                     
-                    // 打开临时数据库
+                    // 打开临时数据库，必须加上迁移脚本，防止旧版本备份被清空
                     val tempDb = androidx.room.Room.databaseBuilder(
                         this@SettingsActivity,
                         AppDatabase::class.java,
                         "notes_database_temp"
-                    ).fallbackToDestructiveMigration().build()
+                    )
+                    .addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6)
+                    .fallbackToDestructiveMigration()
+                    .build()
 
                     val mainDb = AppDatabase.getDatabase(this@SettingsActivity)
 
-                    // 1. 合并笔记本 (忽略已存在的同名笔记本)
                     val notebooks = tempDb.notebookDao().getAllNotebooks().first()
                     notebooks.forEach { mainDb.notebookDao().insert(it) }
 
-                    // 2. 合并笔记 (将 id 设为 0 以自动生成新 id，避免冲突)
                     val notes = tempDb.noteDao().getAllNotes().first()
                     notes.forEach { mainDb.noteDao().insert(it.copy(id = 0)) }
 
-                    // 3. 合并 AI 配置 (将 id 设为 0，并设为未激活，以免打乱当前配置)
                     val configs = tempDb.aiConfigDao().getAllConfigs().first()
                     configs.forEach { mainDb.aiConfigDao().insert(it.copy(id = 0, isActive = false)) }
 
                     tempDb.close()
                     tempDbFile.delete()
+                    getDatabasePath("notes_database_temp-wal").delete()
+                    getDatabasePath("notes_database_temp-shm").delete()
 
                     withContext(Dispatchers.Main) {
                         Toast.makeText(this@SettingsActivity, "增量导入成功！", Toast.LENGTH_SHORT).show()

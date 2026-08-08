@@ -17,8 +17,8 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        // 定义从版本 4 到 5 的迁移逻辑（新建 ai_configs 表）
-        private val MIGRATION_4_5 = object : Migration(4, 5) {
+        // 修改：去掉 private，改为公开
+        val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "CREATE TABLE IF NOT EXISTS `ai_configs` (" +
@@ -33,8 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        // 定义从版本 5 到 6 的迁移逻辑（ai_configs 表新增 systemPrompt 字段）
-        private val MIGRATION_5_6 = object : Migration(5, 6) {
+        // 修改：去掉 private，改为公开
+        val MIGRATION_5_6 = object : Migration(5, 6) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE `ai_configs` ADD COLUMN `systemPrompt` TEXT NOT NULL DEFAULT ''")
                 // 新增下面这行，为笔记本表也加上 systemPrompt
