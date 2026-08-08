@@ -1,4 +1,4 @@
-package com.example.yueread.data
+package com.yueread.data
 
 import androidx.room.Dao
 import androidx.room.Delete

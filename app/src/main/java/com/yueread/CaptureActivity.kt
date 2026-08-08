@@ -1,4 +1,4 @@
-package com.example.yueread
+package com.yueread
 
 import android.app.AlertDialog
 import android.content.Intent
@@ -13,9 +13,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.yueread.data.AppDatabase
-import com.example.yueread.data.Note
-import com.example.yueread.data.Notebook
+import com.yueread.data.AppDatabase
+import com.yueread.data.Note
+import com.yueread.data.Notebook
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

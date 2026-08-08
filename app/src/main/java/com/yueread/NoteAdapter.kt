@@ -1,11 +1,11 @@
-package com.example.yueread
+package com.yueread
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.yueread.data.Note
+import com.yueread.data.Note
 
 class NoteAdapter(
     private var notes: List<Note>,

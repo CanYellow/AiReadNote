@@ -1,4 +1,4 @@
-package com.example.yueread
+package com.yueread
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -7,7 +7,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.yueread.data.AppDatabase
+import com.yueread.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

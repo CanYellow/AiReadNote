@@ -1,4 +1,4 @@
-package com.example.yueread
+package com.yueread
 
 import android.app.AlertDialog
 import android.content.ClipData
@@ -16,8 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.yueread.data.AiConfig
-import com.example.yueread.data.AppDatabase
+import com.yueread.data.AiConfig
+import com.yueread.data.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
