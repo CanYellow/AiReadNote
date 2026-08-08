@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import com.example.yueread.R
 import com.yueread.data.AppDatabase
 import com.yueread.data.Notebook
 import kotlinx.coroutines.Dispatchers
