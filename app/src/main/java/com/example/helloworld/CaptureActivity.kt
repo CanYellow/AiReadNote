@@ -106,19 +106,29 @@ class CaptureActivity : ComponentActivity() {
                 val note = Note(selectedText = selectedText, thought = thought, notebook = notebook)
                 db.noteDao().insert(note)
                 
-                delay(2000) // 模拟 AI 网络请求延迟
-                val mockAiResponse = "AI回复：关于“${thought}”的见解很深刻！"
+                val activeConfig = db.aiConfigDao().getActiveConfig()
+                
+                val aiResponseText = if (activeConfig == null) {
+                    "错误：未配置或未激活任何 AI 模型，请前往设置页面配置。"
+                } else {
+                    try {
+                        val prompt = "原文：$selectedText\n我的感想：$thought\n请根据以上内容给出你的见解或补充。"
+                        AiNetworkManager.sendRequest(activeConfig, prompt)
+                    } catch (e: Exception) {
+                        "网络请求异常: ${e.message}"
+                    }
+                }
                 
                 val latestNote = db.noteDao().getLatestNote()
                 if (latestNote != null) {
-                    db.noteDao().update(latestNote.copy(aiResponse = mockAiResponse))
+                    db.noteDao().update(latestNote.copy(aiResponse = aiResponseText))
                 }
                 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CaptureActivity, "AI 回复已更新", Toast.LENGTH_SHORT).show()
                 }
             }
-            finish() // 发送后直接关闭弹窗
+            finish()
         }
     }
 

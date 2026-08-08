@@ -40,4 +40,7 @@ dependencies {
     
     // 新增：Activity 和 lifecycleScope 支持
     implementation "androidx.activity:activity-ktx:1.7.2"
+
+    // 新增：网络请求
+    implementation "com.squareup.okhttp3:okhttp:4.11.0"
 }
