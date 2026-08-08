@@ -1,6 +1,7 @@
 package com.example.helloworld
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -20,7 +21,7 @@ class MainActivity : Activity() {
 
         val btnManage = findViewById<Button>(R.id.btn_manage_notebooks)
         btnManage.setOnClickListener {
-            Toast.makeText(this, "管理笔记本功能即将上线", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, NotebookManagerActivity::class.java))
         }
 
         val btnSettings = findViewById<Button>(R.id.btn_settings)
@@ -42,12 +43,21 @@ class MainActivity : Activity() {
         val adapter = NoteAdapter(
             emptyList(),
             onClick = { note ->
-                Toast.makeText(this, "点击了笔记: ${note.id}", Toast.LENGTH_SHORT).show()
-                // TODO: 跳转到详情页面
+                val intent = Intent(this, NoteDetailActivity::class.java)
+                intent.putExtra("NOTE_ID", note.id)
+                startActivity(intent)
             },
             onLongClick = { note ->
-                Toast.makeText(this, "长按了笔记: ${note.id}", Toast.LENGTH_SHORT).show()
-                // TODO: 弹出删除或管理菜单
+                AlertDialog.Builder(this)
+                    .setTitle("删除笔记")
+                    .setMessage("确定要删除这条笔记吗？")
+                    .setPositiveButton("删除") { _, _ ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            AppDatabase.getDatabase(applicationContext).noteDao().delete(note)
+                        }
+                    }
+                    .setNegativeButton("取消", null)
+                    .show()
             }
         )
         recyclerView.adapter = adapter

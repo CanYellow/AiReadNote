@@ -11,6 +11,8 @@
         </activity>
 
         <activity android:name=".SettingsActivity" android:exported="false" />
+        <activity android:name=".NotebookManagerActivity" android:exported="false" />
+        <activity android:name=".NoteDetailActivity" android:exported="false" />
 
         <activity 
             android:name=".CaptureActivity" 
