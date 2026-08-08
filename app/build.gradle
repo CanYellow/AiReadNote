@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.yueread'
+    namespace 'com.example.yueread'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.yueread"
+        applicationId "com.example.yueread"
         minSdk 24
         targetSdk 34
         versionCode 1
