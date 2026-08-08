@@ -8,36 +8,41 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
         
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="我的笔记本"
             android:textSize="24sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
 
-        <Button
-            android:id="@+id/btn_add_note"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="+ 新建笔记"
-            android:layout_marginEnd="8dp"/>
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/btn_manage_notebooks"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="管理笔记本"
-            android:layout_marginEnd="8dp"/>
+            <Button
+                android:id="@+id/btn_add_note"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="+ 新建笔记"
+                android:layout_marginEnd="8dp"/>
 
-        <Button
-            android:id="@+id/btn_settings"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="设置" />
+            <Button
+                android:id="@+id/btn_manage_notebooks"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="管理笔记本"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="设置" />
+        </LinearLayout>
     </LinearLayout>
 
     <Spinner
