@@ -26,13 +26,10 @@
             android:text="设置" />
     </LinearLayout>
 
-    <!-- 后续这里将替换为 RecyclerView 来展示笔记本和笔记列表 -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="这里将显示你的笔记本和笔记列表\n(支持滚动查看和点击展开详情)"
-        android:textSize="16sp"
-        android:textColor="@android:color/darker_gray"/>
+        android:layout_marginTop="16dp"/>
 
 </LinearLayout>

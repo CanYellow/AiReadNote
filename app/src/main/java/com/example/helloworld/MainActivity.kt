@@ -1,10 +1,13 @@
 package com.example.helloworld
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworld.data.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +20,7 @@ class MainActivity : Activity() {
 
         val btnSettings = findViewById<Button>(R.id.btn_settings)
         btnSettings.setOnClickListener {
-            Toast.makeText(this, "即将打开设置页面", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
         
         // 针对你的第4个需求：处理从通知栏点击进来的跳转
@@ -27,15 +30,16 @@ class MainActivity : Activity() {
             // 后续这里会编写跳转到笔记详情页面的代码
         }
         
+        val recyclerView = findViewById<RecyclerView>(R.id.recycler_view)
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = NoteAdapter(emptyList())
+        recyclerView.adapter = adapter
+
         // 监听数据库中的笔记数据
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             val db = AppDatabase.getDatabase(applicationContext)
             db.noteDao().getAllNotes().collect { notes ->
-                // 当数据库数据变化时，这里会收到最新的笔记列表
-                Log.d("MainActivity", "当前共有 ${notes.size} 条笔记")
-                notes.forEach { note ->
-                    Log.d("MainActivity", "笔记: ${note.thought} (来自: ${note.notebook})")
-                }
+                adapter.updateData(notes)
             }
         }
     }
