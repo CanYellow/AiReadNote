@@ -74,6 +74,21 @@ class SettingsActivity : ComponentActivity() {
                         holder.itemView.setOnClickListener {
                             showEditConfigDialog(config, db)
                         }
+
+                        // 新增：长按删除配置
+                        holder.itemView.setOnLongClickListener {
+                            AlertDialog.Builder(this@SettingsActivity)
+                                .setTitle("删除配置")
+                                .setMessage("确定要删除配置 ${config.name} 吗？")
+                                .setPositiveButton("删除") { _, _ ->
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        db.aiConfigDao().delete(config)
+                                    }
+                                }
+                                .setNegativeButton("取消", null)
+                                .show()
+                            true
+                        }
                     }
                 }
             }
@@ -186,14 +201,30 @@ class SettingsActivity : ComponentActivity() {
 
                     val mainDb = AppDatabase.getDatabase(this@SettingsActivity)
 
+                    // 增量导入去重逻辑
+                    val existingNotebooks = mainDb.notebookDao().getAllNotebooks().first().map { it.name }.toSet()
                     val notebooks = tempDb.notebookDao().getAllNotebooks().first()
-                    notebooks.forEach { mainDb.notebookDao().insert(it) }
+                    notebooks.forEach { 
+                        if (it.name !in existingNotebooks) {
+                            mainDb.notebookDao().insert(it) 
+                        }
+                    }
 
+                    val existingNotes = mainDb.noteDao().getAllNotes().first().map { "${it.timestamp}_${it.selectedText}" }.toSet()
                     val notes = tempDb.noteDao().getAllNotes().first()
-                    notes.forEach { mainDb.noteDao().insert(it.copy(id = 0)) }
+                    notes.forEach { 
+                        if ("${it.timestamp}_${it.selectedText}" !in existingNotes) {
+                            mainDb.noteDao().insert(it.copy(id = 0)) 
+                        }
+                    }
 
+                    val existingConfigs = mainDb.aiConfigDao().getAllConfigs().first().map { it.name }.toSet()
                     val configs = tempDb.aiConfigDao().getAllConfigs().first()
-                    configs.forEach { mainDb.aiConfigDao().insert(it.copy(id = 0, isActive = false)) }
+                    configs.forEach { 
+                        if (it.name !in existingConfigs) {
+                            mainDb.aiConfigDao().insert(it.copy(id = 0, isActive = false)) 
+                        }
+                    }
 
                     tempDb.close()
                     tempDbFile.delete()

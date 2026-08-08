@@ -1,6 +1,7 @@
 package com.example.helloworld.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -13,6 +14,10 @@ interface AiConfigDao {
 
     @Update
     suspend fun update(config: AiConfig)
+
+    // 新增：删除配置
+    @Delete
+    suspend fun delete(config: AiConfig)
 
     @Query("SELECT * FROM ai_configs")
     fun getAllConfigs(): Flow<List<AiConfig>>
