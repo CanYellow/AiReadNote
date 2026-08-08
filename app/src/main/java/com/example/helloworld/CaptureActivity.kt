@@ -1,6 +1,5 @@
 package com.example.helloworld
 
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
@@ -12,15 +11,18 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.helloworld.data.AppDatabase
 import com.example.helloworld.data.Note
+import com.example.helloworld.data.Notebook
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CaptureActivity : Activity() {
+class CaptureActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_capture)
@@ -33,14 +35,32 @@ class CaptureActivity : Activity() {
 
         textSelected.text = selectedText
 
-        val notebooks = mutableListOf("默认笔记本", "《人类简史》笔记", "英语生词本", "+ 新增笔记本")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, notebooks)
+        val displayList = mutableListOf<String>()
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, displayList)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerNotebook.adapter = adapter
 
+        val db = AppDatabase.getDatabase(applicationContext)
+
+        // 动态监听激活的笔记本
+        lifecycleScope.launch {
+            db.notebookDao().getActiveNotebooks().collect { notebooks ->
+                displayList.clear()
+                displayList.addAll(notebooks.map { it.name })
+                if (displayList.isEmpty()) {
+                    // 如果为空，插入一个默认的
+                    db.notebookDao().insert(Notebook("默认笔记本"))
+                }
+                displayList.add("+ 新增笔记本")
+                adapter.notifyDataSetChanged()
+                // 默认选中第一个（即最近使用的）
+                spinnerNotebook.setSelection(0)
+            }
+        }
+
         spinnerNotebook.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (notebooks[position] == "+ 新增笔记本") {
+                if (displayList[position] == "+ 新增笔记本") {
                     val input = EditText(this@CaptureActivity)
                     AlertDialog.Builder(this@CaptureActivity)
                         .setTitle("新增笔记本")
@@ -48,9 +68,9 @@ class CaptureActivity : Activity() {
                         .setPositiveButton("确定") { _, _ ->
                             val newName = input.text.toString()
                             if (newName.isNotBlank()) {
-                                notebooks.add(notebooks.size - 1, newName)
-                                adapter.notifyDataSetChanged()
-                                spinnerNotebook.setSelection(notebooks.size - 2)
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    db.notebookDao().insert(Notebook(name = newName))
+                                }
                             }
                         }
                         .setNegativeButton("取消") { _, _ -> spinnerNotebook.setSelection(0) }
@@ -67,7 +87,7 @@ class CaptureActivity : Activity() {
             val thought = editThought.text.toString()
             val selectedNotebook = spinnerNotebook.selectedItem.toString()
             CoroutineScope(Dispatchers.IO).launch {
-                val db = AppDatabase.getDatabase(applicationContext)
+                db.notebookDao().update(Notebook(name = selectedNotebook, isActive = true, lastUsed = System.currentTimeMillis()))
                 db.noteDao().insert(Note(selectedText = selectedText, thought = thought, notebook = selectedNotebook))
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CaptureActivity, "已保存", Toast.LENGTH_SHORT).show()
@@ -82,7 +102,7 @@ class CaptureActivity : Activity() {
             Toast.makeText(this, "正在发送给 AI...", Toast.LENGTH_SHORT).show()
             
             CoroutineScope(Dispatchers.IO).launch {
-                val db = AppDatabase.getDatabase(applicationContext)
+                db.notebookDao().update(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
                 val note = Note(selectedText = selectedText, thought = thought, notebook = notebook)
                 db.noteDao().insert(note)
                 
@@ -103,7 +123,6 @@ class CaptureActivity : Activity() {
     }
 
     private fun extractTextFromIntent(intent: Intent): String? {
-        // 保持原有的 extractTextFromIntent 逻辑不变
         return when (intent.action) {
             "colordict.intent.action.SEARCH" -> intent.getStringExtra("EXTRA_QUERY")
             Intent.ACTION_PROCESS_TEXT -> intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)?.toString()

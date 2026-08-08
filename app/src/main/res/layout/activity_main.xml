@@ -20,6 +20,13 @@
             android:textStyle="bold"/>
 
         <Button
+            android:id="@+id/btn_manage_notebooks"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="管理笔记本"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
             android:id="@+id/btn_settings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -1,0 +1,11 @@
+package com.example.helloworld.data
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "notebooks")
+data class Notebook(
+    @PrimaryKey val name: String,
+    val isActive: Boolean = true,
+    val lastUsed: Long = System.currentTimeMillis()
+)

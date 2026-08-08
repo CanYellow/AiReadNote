@@ -18,6 +18,11 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val btnManage = findViewById<Button>(R.id.btn_manage_notebooks)
+        btnManage.setOnClickListener {
+            Toast.makeText(this, "管理笔记本功能即将上线", Toast.LENGTH_SHORT).show()
+        }
+
         val btnSettings = findViewById<Button>(R.id.btn_settings)
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
