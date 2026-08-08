@@ -4,17 +4,23 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.helloworld.data.AppDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class MainActivity : Activity() {
+    private var notesJob: Job? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -62,12 +68,40 @@ class MainActivity : Activity() {
         )
         recyclerView.adapter = adapter
 
-        // 监听数据库中的笔记数据
+        val spinnerFilter = findViewById<Spinner>(R.id.spinner_filter_notebook)
+        val displayList = mutableListOf<String>()
+        val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, displayList)
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerFilter.adapter = spinnerAdapter
+
+        val db = AppDatabase.getDatabase(applicationContext)
+
         CoroutineScope(Dispatchers.Main).launch {
-            val db = AppDatabase.getDatabase(applicationContext)
-            db.noteDao().getAllNotes().collect { notes ->
-                adapter.updateData(notes)
+            db.notebookDao().getAllNotebooks().collect { notebooks ->
+                displayList.clear()
+                displayList.add("全部笔记本")
+                displayList.addAll(notebooks.map { it.name })
+                spinnerAdapter.notifyDataSetChanged()
             }
+        }
+
+        spinnerFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selected = displayList[position]
+                notesJob?.cancel()
+                notesJob = CoroutineScope(Dispatchers.Main).launch {
+                    if (selected == "全部笔记本") {
+                        db.noteDao().getAllNotes().collect { notes ->
+                            adapter.updateData(notes)
+                        }
+                    } else {
+                        db.noteDao().getNotesByNotebook(selected).collect { notes ->
+                            adapter.updateData(notes)
+                        }
+                    }
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 }

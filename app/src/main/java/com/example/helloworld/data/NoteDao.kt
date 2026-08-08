@@ -26,4 +26,10 @@ interface NoteDao {
 
     @Query("SELECT * FROM notes WHERE id = :id")
     suspend fun getNoteById(id: Int): Note?
+
+    @Query("SELECT * FROM notes WHERE notebook = :notebookName ORDER BY timestamp DESC")
+    fun getNotesByNotebook(notebookName: String): Flow<List<Note>>
+
+    @Query("UPDATE notes SET notebook = :newName WHERE notebook = :oldName")
+    suspend fun updateNotebookName(oldName: String, newName: String)
 }

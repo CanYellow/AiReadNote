@@ -60,6 +60,10 @@ class NotebookManagerActivity : ComponentActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)
         }
+        val editName = EditText(this).apply {
+            hint = "笔记本名称"
+            setText(notebook.name)
+        }
         val editCategory = EditText(this).apply { 
             hint = "分类 (如: 默认分类)"
             setText(notebook.category)
@@ -69,6 +73,7 @@ class NotebookManagerActivity : ComponentActivity() {
             setText(notebook.systemPrompt)
         }
 
+        layout.addView(editName)
         layout.addView(editCategory)
         layout.addView(editPrompt)
 
@@ -76,12 +81,21 @@ class NotebookManagerActivity : ComponentActivity() {
             .setTitle("编辑笔记本: ${notebook.name}")
             .setView(layout)
             .setPositiveButton("保存") { _, _ ->
-                val updatedNb = notebook.copy(
-                    category = editCategory.text.toString(),
-                    systemPrompt = editPrompt.text.toString()
-                )
+                val newName = editName.text.toString()
+                val newCategory = editCategory.text.toString()
+                val newPrompt = editPrompt.text.toString()
+                
                 lifecycleScope.launch(Dispatchers.IO) {
-                    db.notebookDao().update(updatedNb)
+                    if (newName != notebook.name) {
+                        db.notebookDao().updateNotebookDetails(notebook.name, newName, newCategory, newPrompt)
+                        db.noteDao().updateNotebookName(notebook.name, newName)
+                    } else {
+                        val updatedNb = notebook.copy(
+                            category = newCategory,
+                            systemPrompt = newPrompt
+                        )
+                        db.notebookDao().update(updatedNb)
+                    }
                 }
             }
             .setNegativeButton("取消", null)

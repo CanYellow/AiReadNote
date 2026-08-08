@@ -22,4 +22,12 @@ interface NotebookDao {
     // 获取所有笔记本（用于管理页面）
     @Query("SELECT * FROM notebooks ORDER BY lastUsed DESC")
     fun getAllNotebooks(): Flow<List<Notebook>>
+
+    // 获取单个笔记本（用于 CaptureActivity 拼接提示词）
+    @Query("SELECT * FROM notebooks WHERE name = :name LIMIT 1")
+    suspend fun getNotebookByName(name: String): Notebook?
+
+    // 更新笔记本详情（支持修改主键 name）
+    @Query("UPDATE notebooks SET name = :newName, category = :category, systemPrompt = :systemPrompt WHERE name = :oldName")
+    suspend fun updateNotebookDetails(oldName: String, newName: String, category: String, systemPrompt: String)
 }
