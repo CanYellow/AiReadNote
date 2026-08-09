@@ -88,15 +88,18 @@ class CaptureActivity : ComponentActivity() {
             val selectedNotebook = spinnerNotebook.selectedItem.toString()
             val appContext = applicationContext
             
+            // 立即隐藏界面
+            this@CaptureActivity.setVisible(false)
+            
             CoroutineScope(Dispatchers.IO).launch {
                 db.notebookDao().update(Notebook(name = selectedNotebook, isActive = true, lastUsed = System.currentTimeMillis()))
                 db.noteDao().insert(Note(selectedText = selectedText, thought = thought, notebook = selectedNotebook))
                 withContext(Dispatchers.Main) {
                     Toast.makeText(appContext, "已保存", Toast.LENGTH_SHORT).show()
+                    // 任务完成后真正结束 Activity
+                    finish()
                 }
             }
-            // 立即关闭页面
-            finish()
         }
 
         btnSendAi.setOnClickListener {
@@ -105,6 +108,9 @@ class CaptureActivity : ComponentActivity() {
             val appContext = applicationContext
             
             Toast.makeText(appContext, "正在发送给 AI...", Toast.LENGTH_SHORT).show()
+            
+            // 立即隐藏界面
+            this@CaptureActivity.setVisible(false)
             
             CoroutineScope(Dispatchers.IO).launch {
                 db.notebookDao().update(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
@@ -135,11 +141,10 @@ class CaptureActivity : ComponentActivity() {
                 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(appContext, "AI 回复已更新", Toast.LENGTH_SHORT).show()
+                    // 任务完成后真正结束 Activity
+                    finish()
                 }
             }
-            
-            // 立即关闭页面
-            finish()
         }
     }
 
