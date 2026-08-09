@@ -98,7 +98,12 @@ class CaptureActivity : ComponentActivity() {
             this@CaptureActivity.setVisible(false)
             
             CoroutineScope(Dispatchers.IO).launch {
-                db.notebookDao().update(Notebook(name = selectedNotebook, isActive = true, lastUsed = System.currentTimeMillis()))
+                val existingNotebook = db.notebookDao().getNotebookByName(selectedNotebook)
+                if (existingNotebook != null) {
+                    db.notebookDao().update(existingNotebook.copy(isActive = true, lastUsed = System.currentTimeMillis()))
+                } else {
+                    db.notebookDao().insert(Notebook(name = selectedNotebook, isActive = true, lastUsed = System.currentTimeMillis()))
+                }
                 db.noteDao().insert(Note(selectedText = selectedText, thought = thought, notebook = selectedNotebook))
                 withContext(Dispatchers.Main) {
                     Toast.makeText(appContext, "已保存", Toast.LENGTH_SHORT).show()
@@ -119,7 +124,12 @@ class CaptureActivity : ComponentActivity() {
             this@CaptureActivity.setVisible(false)
             
             CoroutineScope(Dispatchers.IO).launch {
-                db.notebookDao().update(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
+                val existingNotebook = db.notebookDao().getNotebookByName(notebook)
+                if (existingNotebook != null) {
+                    db.notebookDao().update(existingNotebook.copy(isActive = true, lastUsed = System.currentTimeMillis()))
+                } else {
+                    db.notebookDao().insert(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
+                }
                 val note = Note(selectedText = selectedText, thought = thought, notebook = notebook)
                 db.noteDao().insert(note)
                 
