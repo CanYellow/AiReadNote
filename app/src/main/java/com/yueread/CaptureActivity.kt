@@ -101,18 +101,26 @@ class CaptureActivity : ComponentActivity() {
             val notebook = spinnerNotebook.selectedItem.toString()
             Toast.makeText(this, "正在发送给 AI...", Toast.LENGTH_SHORT).show()
             
+            // 禁用按钮防止重复点击导致多次请求
+            btnSendAi.isEnabled = false
+            
             CoroutineScope(Dispatchers.IO).launch {
                 db.notebookDao().update(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
                 val note = Note(selectedText = selectedText, thought = thought, notebook = notebook)
                 db.noteDao().insert(note)
                 
                 val activeConfig = db.aiConfigDao().getActiveConfig()
+                val notebookObj = db.notebookDao().getNotebookByName(notebook)
                 
                 val aiResponseText = if (activeConfig == null) {
                     "错误：未配置或未激活任何 AI 模型，请前往设置页面配置。"
                 } else {
                     try {
-                        val prompt = "原文：$selectedText\n我的感想：$thought\n请根据以上内容给出你的见解或补充。"
+                        // 修复：采用与 NoteDetailActivity 完全一致的提示词拼接逻辑
+                        val aiPrompt = activeConfig.systemPrompt.takeIf { it.isNotBlank() }?.let { "$it\n" } ?: ""
+                        val nbPrompt = notebookObj?.systemPrompt?.takeIf { it.isNotBlank() }?.let { "$it\n" } ?: ""
+                        
+                        val prompt = "${aiPrompt}${nbPrompt}原文：$selectedText\n我的感想：$thought\n请根据以上内容给出你的见解或补充。"
                         AiNetworkManager.sendRequest(activeConfig, prompt)
                     } catch (e: Exception) {
                         "网络请求异常: ${e.message}"
@@ -126,9 +134,10 @@ class CaptureActivity : ComponentActivity() {
                 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@CaptureActivity, "AI 回复已更新", Toast.LENGTH_SHORT).show()
+                    // 修复：将 finish() 移到协程内部，确保网络请求和数据库操作完成后再关闭页面，防止后台被杀或 Context 失效崩溃
+                    finish()
                 }
             }
-            finish()
         }
     }
 
