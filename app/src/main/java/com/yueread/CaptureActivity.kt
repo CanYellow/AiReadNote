@@ -1,7 +1,12 @@
 package com.yueread
 
 import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -12,6 +17,7 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.lifecycleScope
 import com.yueread.data.AppDatabase
 import com.yueread.data.Note
@@ -137,6 +143,48 @@ class CaptureActivity : ComponentActivity() {
                 val latestNote = db.noteDao().getLatestNote()
                 if (latestNote != null) {
                     db.noteDao().update(latestNote.copy(aiResponse = aiResponseText))
+                    
+                    // --- 新增：发送通知逻辑 ---
+                    val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    val channelId = "ai_response_channel"
+                    
+                    // 创建通知渠道 (Android 8.0+)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val channel = NotificationChannel(
+                            channelId,
+                            "AI 回复通知",
+                            NotificationManager.IMPORTANCE_DEFAULT
+                        ).apply {
+                            description = "当 AI 回复完成时接收通知"
+                        }
+                        notificationManager.createNotificationChannel(channel)
+                    }
+
+                    // 创建点击通知后的跳转 Intent
+                    val intent = Intent(appContext, NoteDetailActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        putExtra("NOTE_ID", latestNote.id)
+                    }
+                    
+                    val pendingIntent = PendingIntent.getActivity(
+                        appContext,
+                        latestNote.id,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+
+                    // 构建并发送通知
+                    val notification = NotificationCompat.Builder(appContext, channelId)
+                        .setSmallIcon(R.mipmap.ic_launcher) // 使用应用图标作为通知图标
+                        .setContentTitle("AI 回复已完成")
+                        .setContentText("您的笔记已获得 AI 回复，点击查看详情。")
+                        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                        .setContentIntent(pendingIntent)
+                        .setAutoCancel(true)
+                        .build()
+
+                    notificationManager.notify(latestNote.id, notification)
+                    // --- 新增结束 ---
                 }
                 
                 withContext(Dispatchers.Main) {
