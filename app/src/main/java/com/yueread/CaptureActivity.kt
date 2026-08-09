@@ -86,23 +86,25 @@ class CaptureActivity : ComponentActivity() {
         btnSave.setOnClickListener {
             val thought = editThought.text.toString()
             val selectedNotebook = spinnerNotebook.selectedItem.toString()
+            val appContext = applicationContext
+            
             CoroutineScope(Dispatchers.IO).launch {
                 db.notebookDao().update(Notebook(name = selectedNotebook, isActive = true, lastUsed = System.currentTimeMillis()))
                 db.noteDao().insert(Note(selectedText = selectedText, thought = thought, notebook = selectedNotebook))
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CaptureActivity, "已保存", Toast.LENGTH_SHORT).show()
-                    finish()
+                    Toast.makeText(appContext, "已保存", Toast.LENGTH_SHORT).show()
                 }
             }
+            // 立即关闭页面
+            finish()
         }
 
         btnSendAi.setOnClickListener {
             val thought = editThought.text.toString()
             val notebook = spinnerNotebook.selectedItem.toString()
-            Toast.makeText(this, "正在发送给 AI...", Toast.LENGTH_SHORT).show()
+            val appContext = applicationContext
             
-            // 禁用按钮防止重复点击导致多次请求
-            btnSendAi.isEnabled = false
+            Toast.makeText(appContext, "正在发送给 AI...", Toast.LENGTH_SHORT).show()
             
             CoroutineScope(Dispatchers.IO).launch {
                 db.notebookDao().update(Notebook(name = notebook, isActive = true, lastUsed = System.currentTimeMillis()))
@@ -116,7 +118,6 @@ class CaptureActivity : ComponentActivity() {
                     "错误：未配置或未激活任何 AI 模型，请前往设置页面配置。"
                 } else {
                     try {
-                        // 修复：采用与 NoteDetailActivity 完全一致的提示词拼接逻辑
                         val aiPrompt = activeConfig.systemPrompt.takeIf { it.isNotBlank() }?.let { "$it\n" } ?: ""
                         val nbPrompt = notebookObj?.systemPrompt?.takeIf { it.isNotBlank() }?.let { "$it\n" } ?: ""
                         
@@ -133,11 +134,12 @@ class CaptureActivity : ComponentActivity() {
                 }
                 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@CaptureActivity, "AI 回复已更新", Toast.LENGTH_SHORT).show()
-                    // 修复：将 finish() 移到协程内部，确保网络请求和数据库操作完成后再关闭页面，防止后台被杀或 Context 失效崩溃
-                    finish()
+                    Toast.makeText(appContext, "AI 回复已更新", Toast.LENGTH_SHORT).show()
                 }
             }
+            
+            // 立即关闭页面
+            finish()
         }
     }
 
